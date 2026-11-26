@@ -23,6 +23,7 @@ local WINDOW_HEIGHT = 720
 local bird = Bird()
 
 function love.load()
+  love.graphics.setDefaultFilter("nearest", "nearest")
   love.window.setTitle("Flappy Bird!")
   love.window.setMode(WINDOW_WIDTH, WINDOW_HEIGHT, {
     resizable = true,
@@ -30,18 +31,43 @@ function love.load()
     fullscreen = false
   })
   push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, { upscale = "normal" })
+
+  --input table
+  love.keyboard.keysPressed = {}
+end
+
+function love.keypressed(key)
+  --add to our table of keys pressed this frame
+  love.keyboard.keysPressed[key] = true
+  if key == "escape" then
+    love.event.quit()
+  end
+end
+
+--[[
+  New function used to check our global input table for keys activated during this frame
+]]
+function love.keyboard.wasPressed(key)
+  if love.keyboard.keysPressed[key] then
+    return true
+  else
+    return false
+  end
 end
 
 function love.update(dt)
   backgroundScroll = (backgroundScroll + BACKGROUND_SCROLL_SPEED * dt) % BACKGROUND_LOOPING_POINT
 
-
   groundScroll = (groundScroll + GROUND_SCROLL_SPEED * dt) % VIRTUAL_WIDTH
+
+  bird:update(dt)
+
+  love.keyboard.keysPressed = {}
 end
 
 function love.draw()
   push:start()
-  
+
   love.graphics.draw(background, -backgroundScroll, 0)
   love.graphics.draw(ground, -groundScroll, VIRTUAL_HEIGHT - 16)
   bird:render()
